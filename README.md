@@ -11,9 +11,11 @@ Best check out [the book](https://rust-embedded.github.io/book/) first.
 
 ## Building/debugging
 
-You need some kind of in-circuit debugger. This repo is set up for debugging with a Black Magic Probe.
-If you want to use something else, you'll need to change the `runner = ` line in `.cargo/config` to
-point to an appropriate gdb file.
+You need some kind of in-circuit debugger. This repo is set up for debugging with a Black Magic Probe (if you're
+using one, you'll need to change the device name in `bmp.gdb` to the gdb (first) interface of your device.
+
+If you want to use another debug probe, you'll need to change the `runner = ` line in `.cargo/config` to point
+to an appropriate gdb file.
 
 Once that's set up, you should be able to:
 
