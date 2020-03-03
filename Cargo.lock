@@ -203,7 +203,7 @@ checksum = "f17afbf34b745b5f47a829abe5ffd0e17921b0b2029f7da909a2edc04b69c71c"
 dependencies = [
  "cortex-m",
  "stm32f0xx-hal",
- "usb-device 0.2.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "usb-device",
  "vcell",
 ]
 
@@ -260,7 +260,7 @@ dependencies = [
  "stm32-device-signature",
  "stm32-usbd",
  "stm32f0xx-hal",
- "usb-device 0.2.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "usb-device",
  "usbd-serial",
 ]
 
@@ -279,16 +279,8 @@ checksum = "826e7639553986605ec5979c7dd957c7895e93eabed50ab2ffa7f6128a75097c"
 [[package]]
 name = "usb-device"
 version = "0.2.5"
-dependencies = [
- "cortex-m-semihosting",
-]
-
-[[package]]
-name = "usb-device"
-version = "0.2.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0e5e2b9ba23f0d9ef7a34e498b6581c9d67944a1916542bfc7238bf1dc0d6acd"
-replace = "usb-device 0.2.5"
 
 [[package]]
 name = "usbd-serial"
@@ -298,7 +290,7 @@ checksum = "b45051be4bc25e6f85caacb1d3f45ace644fcc6e662b3d976330912542b7f69e"
 dependencies = [
  "embedded-hal",
  "nb",
- "usb-device 0.2.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "usb-device",
 ]
 
 [[package]]

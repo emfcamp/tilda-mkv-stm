@@ -29,6 +29,3 @@ codegen-units = 1 # better optimizations
 opt-level = "z"
 debug = true # symbols are nice and they don't increase the size on Flash
 lto = true # enable for better optimizations
-
-[replace]
-'usb-device:0.2.5' = {path = '../usb-device'}

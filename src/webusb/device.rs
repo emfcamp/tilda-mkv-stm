@@ -131,13 +131,11 @@ where
             return Err(UsbError::WouldBlock);
         }
 
-        let r = buf.read(data.len(), |buf_data| {
+        buf.read(data.len(), |buf_data| {
             &data[..buf_data.len()].copy_from_slice(buf_data);
 
             Ok(buf_data.len())
-        });
-
-        r
+        })
     }
 
     /// Sends as much as possible of the current write buffer. Returns `Ok` if all data that has
