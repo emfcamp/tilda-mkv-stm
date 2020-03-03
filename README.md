@@ -1,5 +1,6 @@
+# Tilda MkV STM32 Code
 
-## How do I embedded Rust
+## How do I embedded Rust
 
 Best check out [the book](https://rust-embedded.github.io/book/) first.
 
