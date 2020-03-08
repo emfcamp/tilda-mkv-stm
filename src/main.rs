@@ -6,10 +6,10 @@ mod webusb;
 extern crate panic_reset;
 
 use crate::webusb::WebUSB;
+use core::convert::Infallible;
 use cortex_m_rt::entry;
 use stm32_device_signature::device_id_hex;
 use stm32_usbd::UsbBus;
-use core::convert::Infallible;
 use stm32f0xx_hal::{
     gpio::{Output, Pin, PushPull},
     prelude::*,
@@ -36,8 +36,9 @@ fn main() -> ! {
         .freeze(&mut dp.FLASH);
 
     let gpioa = dp.GPIOA.split(&mut rcc);
+    let gpiob = dp.GPIOB.split(&mut rcc);
 
-    let (usb_dm, usb_dp, uart_tx, uart_rx, mut esp_en, mut esp_gpio0) =
+    let (usb_dm, usb_dp, uart_tx, uart_rx, mut esp_en, mut esp_gpio0, mut led) =
         cortex_m::interrupt::free(|cs| {
             (
                 gpioa.pa11,
@@ -46,11 +47,13 @@ fn main() -> ! {
                 gpioa.pa3.into_alternate_af1(cs),
                 gpioa.pa1.into_push_pull_output(cs).downgrade(),
                 gpioa.pa4.into_push_pull_output(cs).downgrade(),
+                gpiob.pb1.into_push_pull_output(cs).downgrade(),
             )
         });
 
-    let _ = esp_en.set_high();
-    let _ = esp_gpio0.set_high();
+    esp_en.set_high().unwrap();
+    esp_gpio0.set_high().unwrap();
+    led.set_high().unwrap();
 
     let usb_bus = UsbBus::new(dp.USB, (usb_dm, usb_dp));
 
@@ -68,11 +71,15 @@ fn main() -> ! {
 
     loop {
         if usb_dev.poll(&mut [&mut usb_serial, &mut webusb]) {
+            led.set_low().unwrap();
             let mut buf = [0u8; 64];
             match usb_serial.read(&mut buf) {
                 Ok(count) if count > 0 => {
-                    for byte in &buf[0..count] {
-                        if let Ok(()) = uart.write(*byte) {}
+                    let mut offset = 0;
+                    while offset < count {
+                        if let Ok(()) = uart.write(buf[offset]) {
+                            offset += 1;
+                        }
                     }
                 }
                 _ => {}
@@ -80,29 +87,37 @@ fn main() -> ! {
 
             match webusb.read(&mut buf) {
                 Ok(count) if count > 0 => {
-                    for byte in &buf[0..count] {
-                        if let Ok(()) = uart.write(*byte) {}
+                    let mut offset = 0;
+                    while offset < count {
+                        if let Ok(()) = uart.write(buf[offset]) {
+                            offset += 1;
+                        }
                     }
                 }
                 _ => {}
             }
 
             // Set the ESP32 boot pins based on the RTS/DTR pins.
+            // These are inverted because the USB flags are true when asserted where as the serial
+            // lines are false when asserted.
             let _ = set_pins(
-                usb_serial.dtr() || webusb.dtr(),
-                usb_serial.rts() || webusb.rts(),
+                !(usb_serial.dtr() || webusb.dtr()),
+                !(usb_serial.rts() || webusb.rts()),
                 &mut esp_en,
                 &mut esp_gpio0,
             );
+            led.set_high().unwrap();
         }
 
         if usb_dev.state() == UsbDeviceState::Configured {
             // USB device is active.
             while let Ok(byte) = uart.read() {
+                led.set_low().unwrap();
                 // Write input from UART to both USB endpoints, ignoring errors.
                 let _ = usb_serial.write(&[byte]);
                 let _ = webusb.write(&[byte]);
             }
+            led.set_high().unwrap();
         }
     }
 }
@@ -115,7 +130,7 @@ fn set_pins(
     rts: bool,
     esp_en: &mut Pin<Output<PushPull>>,
     esp_gpio0: &mut Pin<Output<PushPull>>,
-) -> Result<(), Infallible>{
+) -> Result<(), Infallible> {
     // https://github.com/espressif/esptool/wiki/ESP32-Boot-Mode-Selection#automatic-bootloader
     // DTR RTS| EN  IO0
     // 1   1  |  1   1
@@ -123,7 +138,7 @@ fn set_pins(
     // 1   0  |  0   1
     // 0   1  |  1   0
 
-    if !(rts && dtr) {
+    if !rts && !dtr {
         esp_gpio0.set_high()?;
         esp_en.set_high()?;
     } else {
