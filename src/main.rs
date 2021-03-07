@@ -51,9 +51,9 @@ fn main() -> ! {
             )
         });
 
-    esp_en.set_high().unwrap();
-    esp_gpio0.set_high().unwrap();
-    led.set_high().unwrap();
+    let _ = esp_en.set_high();
+    let _ = esp_gpio0.set_high();
+    let _ = led.set_high();
 
     let usb_bus = UsbBus::new(dp.USB, (usb_dm, usb_dp));
 
@@ -99,7 +99,7 @@ fn main() -> ! {
 
             // Set the ESP32 boot pins based on the RTS/DTR pins.
             // These are inverted because the USB flags are true when asserted where as the serial
-            // lines are false when asserted.
+            // lines are low when asserted.
             let _ = set_pins(
                 !(usb_serial.dtr() || webusb.dtr()),
                 !(usb_serial.rts() || webusb.rts()),
