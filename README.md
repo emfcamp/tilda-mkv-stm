@@ -1,4 +1,10 @@
-# Tilda MkV STM32 Code
+# Tilda MkV STM32 Firmware
+
+This is the prototype firmware in Rust for the secondary STM32 processor on the TiLDA MkV badge for the cancelled Electromagnetic Field 2020 event.
+
+We planned to use an STM32F0x2 device to act as a custom USB interface to allow the main ESP32 processor to be accessed either over a conventional CDC USB serial interface, or over a WebUSB endpoint from a custom web-based IDE.
+
+It's likely that Web Serial would have removed the need for this (at the expense of a tiny bit of user experience), however Web Serial was not scheduled to be released in Chrome by the time of the event.
 
 ## How do I embedded Rust
 
